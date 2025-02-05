@@ -14,8 +14,8 @@ from torch import nn
 from torch.utils.data import Dataset, DataLoader, random_split
 from torch.utils.data.distributed import DistributedSampler
 
-from data import CTReportDataset
-from data_inference import CTReportDatasetinfer
+from data_new import MedicalImageReportDataset
+# from data_inference import CTReportDatasetinfer
 
 import numpy as np
 import pandas as pd
@@ -124,10 +124,8 @@ class CTClipTrainer(nn.Module):
         *,
         num_train_steps,
         batch_size,
-        data_train = "train",
-        data_valid = "valid",
-        reports_file_train = "data_reports.xslx",
-        reports_file_valid = "data_reports.xslx",
+        root = 'DAC001',
+
         labels = "labels.csv",
         tokenizer = None,
         lr = 1.25e-6,
@@ -161,9 +159,9 @@ class CTClipTrainer(nn.Module):
         self.max_grad_norm = max_grad_norm
         self.lr=lr
         # Load the pre-trained weights
-        self.ds = CTReportDataset(data_folder=data_train, csv_file=reports_file_train)
+        self.ds = MedicalImageReportDataset(root=root, split='train')
 
-        self.valid_ds = CTReportDatasetinfer(data_folder=data_valid, csv_file=reports_file_valid, labels = labels)
+        self.valid_ds = MedicalImageReportDataset(root=root, split='val')
 
 
         self.dl = DataLoader(
@@ -193,7 +191,7 @@ class CTClipTrainer(nn.Module):
             self.optim,
         ) = self.accelerator.prepare(
             self.dl_iter,
-            self.valid_dl_iter,
+            self.x,
             self.CTClip,
             self.optim,
         )
