@@ -49,30 +49,6 @@ def apply_softmax(array):
     softmax_array = softmax(array)
     return softmax_array
 
-
-
-def tensor_to_nifti(tensor, path, affine=np.eye(4)):
-    """
-    Save tensor as a NIfTI file.
-
-    Args:
-        tensor (torch.Tensor): The input tensor with shape (D, H, W) or (C, D, H, W).
-        path (str): The path to save the NIfTI file.
-        affine (np.ndarray, optional): The affine matrix for the NIfTI file. Defaults to np.eye(4).
-    """
-
-    tensor = tensor.cpu()
-
-    if tensor.dim() == 4:
-        # Assume single channel data if there are multiple channels
-        if tensor.size(0) != 1:
-            print("Warning: Saving only the first channel of the input tensor")
-        tensor = tensor.squeeze(0)
-    tensor=tensor.swapaxes(0,2)
-    numpy_data = tensor.detach().numpy().astype(np.float32)
-    nifti_img = nib.Nifti1Image(numpy_data, affine)
-    nib.save(nifti_img, path)
-
 def exists(val):
     return val is not None
 
@@ -297,68 +273,68 @@ class CTClipTrainer(nn.Module):
 
 
 
-        if self.is_main and not (steps % self.save_results_every):
-            with torch.no_grad():
+        # if self.is_main and not (steps % self.save_results_every):
+        #     with torch.no_grad():
 
-                models_to_evaluate = ((self.CTClip, str(steps)),)
+        #         models_to_evaluate = ((self.CTClip, str(steps)),)
 
-                for model, filename in models_to_evaluate:
-                    model.eval()
-                    predictedall=[]
-                    realall=[]
+        #         for model, filename in models_to_evaluate:
+        #             model.eval()
+        #             predictedall=[]
+        #             realall=[]
 
-                    #Fast inference on 100 images
-                    for i in range(10):
-                        print("test")
-                        valid_data, text, onehotlabels, name_acc = next(self.valid_dl_iter)
-                        valid_data = valid_data.to(device)
+        #             #Fast inference on 100 images
+        #             for i in range(10):
+        #                 print("test")
+        #                 valid_data, text, onehotlabels, name_acc = next(self.valid_dl_iter)
+        #                 valid_data = valid_data.to(device)
 
-                        if "module" in model.__dict__:
-                            model = model.module
+        #                 if "module" in model.__dict__:
+        #                     model = model.module
 
-                        pathologies = ['Medical material','Arterial wall calcification', 'Cardiomegaly', 'Pericardial effusion','Coronary artery wall calcification', 'Hiatal hernia','Lymphadenopathy', 'Emphysema', 'Atelectasis', 'Lung nodule','Lung opacity', 'Pulmonary fibrotic sequela', 'Pleural effusion', 'Mosaic attenuation pattern','Peribronchial thickening', 'Consolidation', 'Bronchiectasis','Interlobular septal thickening']
-                        plotdir = str(self.results_folder / f'CTClip_{steps}' )
-                        plotdir = plotdir + "/"
+        #                 pathologies = ['Medical material','Arterial wall calcification', 'Cardiomegaly', 'Pericardial effusion','Coronary artery wall calcification', 'Hiatal hernia','Lymphadenopathy', 'Emphysema', 'Atelectasis', 'Lung nodule','Lung opacity', 'Pulmonary fibrotic sequela', 'Pleural effusion', 'Mosaic attenuation pattern','Peribronchial thickening', 'Consolidation', 'Bronchiectasis','Interlobular septal thickening']
+        #                 plotdir = str(self.results_folder / f'CTClip_{steps}' )
+        #                 plotdir = plotdir + "/"
 
-                        Path(plotdir).mkdir(parents=True, exist_ok=True)
+        #                 Path(plotdir).mkdir(parents=True, exist_ok=True)
 
-                        predictedlabels=[]
-                        for pathology in pathologies:
-                            text = [f"There is {pathology}.", f"There is no {pathology}."]
-                            text_tokens=self.tokenizer(
-                                            text, return_tensors="pt", padding="max_length", truncation=True, max_length=512).to(device)
-                            output = model(text_tokens, valid_data,  device=device)
-
-
-                            output = apply_softmax(output)
-
-                            print(output)
-                            append_out=output.detach().cpu().numpy()
-                            print(output)
-                            if output[0]>output[1]:
-                                predictedlabels.append(append_out[0])
-                            else:
-                                predictedlabels.append(append_out[0])
-                        predictedall.append(predictedlabels)
-                        realall.append(onehotlabels.detach().cpu().numpy()[0])
-                        # Print and save classification report
-                    realall=np.array(realall)
-                    predictedall=np.array(predictedall)
-
-                    dfs=evaluate_internal(predictedall,realall,pathologies, plotdir)
-                    realall = np.rint(realall).astype(int)
-                    predictedall = np.rint(predictedall).astype(int)
+        #                 predictedlabels=[]
+        #                 for pathology in pathologies:
+        #                     text = [f"There is {pathology}.", f"There is no {pathology}."]
+        #                     text_tokens=self.tokenizer(
+        #                                     text, return_tensors="pt", padding="max_length", truncation=True, max_length=512).to(device)
+        #                     output = model(text_tokens, valid_data,  device=device)
 
 
-                    print('Test F1 Accuracy: ', f1_score(realall, predictedall,average='micro'))
-                    print('Test Flat Accuracy: ', accuracy_score(realall.flatten(), predictedall.flatten()),'\n')
+        #                     output = apply_softmax(output)
 
-                    writer = pd.ExcelWriter(f'{plotdir}aurocs.xlsx', engine='xlsxwriter')
+        #                     print(output)
+        #                     append_out=output.detach().cpu().numpy()
+        #                     print(output)
+        #                     if output[0]>output[1]:
+        #                         predictedlabels.append(append_out[0])
+        #                     else:
+        #                         predictedlabels.append(append_out[0])
+        #                 predictedall.append(predictedlabels)
+        #                 realall.append(onehotlabels.detach().cpu().numpy()[0])
+        #                 # Print and save classification report
+        #             realall=np.array(realall)
+        #             predictedall=np.array(predictedall)
 
-                    dfs.to_excel(writer, sheet_name='Sheet1', index=False)
+        #             dfs=evaluate_internal(predictedall,realall,pathologies, plotdir)
+        #             realall = np.rint(realall).astype(int)
+        #             predictedall = np.rint(predictedall).astype(int)
 
-                    writer.close()
-                    del output
+
+        #             print('Test F1 Accuracy: ', f1_score(realall, predictedall,average='micro'))
+        #             print('Test Flat Accuracy: ', accuracy_score(realall.flatten(), predictedall.flatten()),'\n')
+
+        #             writer = pd.ExcelWriter(f'{plotdir}aurocs.xlsx', engine='xlsxwriter')
+
+        #             dfs.to_excel(writer, sheet_name='Sheet1', index=False)
+
+        #             writer.close()
+        #             del output
 
 
         # save model every so often
