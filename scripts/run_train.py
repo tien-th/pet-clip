@@ -1,5 +1,5 @@
 import torch
-from transformer_maskgit import CTViT
+
 from transformers import BertTokenizer, BertModel
 from ct_clip import CTCLIP, TextTransformer
 from CTCLIPTrainer import CTClipTrainer
@@ -48,11 +48,7 @@ clip = CTCLIP(
 )
 trainer = CTClipTrainer(
     clip,
-    reports_file_train= "path_to_train_reports_csv",
-    reports_file_valid= "path_to_validation_reports_csv",
-    data_train= "path_to_preprocessed_train",
-    data_valid = "path_to_preprocessed_valid",
-    labels = "path_to_validation_labels_csv",
+    root='/home/user01/aiotlab/thaind/DAC001',
     batch_size = 8,
     results_folder="output_folder",
     num_train_steps = 100001,

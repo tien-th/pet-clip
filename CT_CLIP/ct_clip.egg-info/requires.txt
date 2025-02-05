@@ -1,0 +1,15 @@
+ImageNetV2_pytorch@ git+https://github.com/modestyachts/ImageNetV2_pytorch.git
+XlsxWriter
+appdirs
+attr
+beartype
+click
+einops>=0.6
+ftfy
+h5py
+matplotlib
+nltk
+regex
+seaborn
+torchvision
+wilds
