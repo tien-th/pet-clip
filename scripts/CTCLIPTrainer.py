@@ -145,7 +145,7 @@ class CTClipTrainer(nn.Module):
         if tokenizer != None:
             self.tokenizer=tokenizer
         else:
-            self.tokenizer=BertTokenizer.from_pretrained('microsoft/BiomedVLP-CXR-BERT-specialized',do_lower_case=True)
+            self.tokenizer=BertTokenizer.from_pretrained('vinai/phobert-base',do_lower_case=True)
 
         self.register_buffer('steps', torch.Tensor([0]))
 
@@ -191,7 +191,7 @@ class CTClipTrainer(nn.Module):
             self.optim,
         ) = self.accelerator.prepare(
             self.dl_iter,
-            self.x,
+            self.valid_dl_iter,
             self.CTClip,
             self.optim,
         )
@@ -254,7 +254,7 @@ class CTClipTrainer(nn.Module):
         mask = torch.ones((video.shape[0], video.shape[2])).bool().to(device)
         #text = text.to(device)
         text = list(text)
-        text_tokens=self.tokenizer(text, return_tensors="pt", padding="max_length", truncation=True, max_length=512).to(device)
+        text_tokens=self.tokenizer(text, return_tensors="pt", padding="max_length", truncation=True, max_length=258).to(device)
 
         #video = video
         with self.accelerator.autocast():

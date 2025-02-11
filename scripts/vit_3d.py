@@ -140,6 +140,7 @@ class ViT(nn.Module):
         self.transformer = Transformer(dim, depth, heads, dim_head, mlp_dim, dropout)
 
     def forward(self, video):
+        print('video: ', video.shape)
         B, C, H, W, D = video.shape
         x = self.to_patch_embedding(video)
         b, n, _ = x.shape
@@ -147,7 +148,7 @@ class ViT(nn.Module):
         pos = self.pos_embedding(B, H // self.patch_height, W // self.patch_width, D // self.frame_patch_size,x)
         x += pos
         x = self.dropout(x)
-
+        print('x: ', x.shape)
         x = self.transformer(x)
         x = rearrange(x, 'b (t f) d -> b t f d', f=64)
-        return x,pos
+        return x

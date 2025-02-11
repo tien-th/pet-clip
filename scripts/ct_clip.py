@@ -582,7 +582,7 @@ class CTCLIP(nn.Module):
 
         self.multiview_loss_weight = multiview_loss_weight
 
-        self.tokenizer= BertTokenizer.from_pretrained('microsoft/BiomedVLP-CXR-BERT-specialized',do_lower_case=True)
+        self.tokenizer= BertTokenizer.from_pretrained('vinai/phobert-base',do_lower_case=True)
 
     def state_dict(self, *args, **kwargs):
         return super().state_dict(*args, **kwargs)
@@ -681,8 +681,9 @@ class CTCLIP(nn.Module):
         if not self.text_encode_without_mask:
             text_args = (*text_args, text_mask)
 
-
-        text_embeddings = self.text_transformer(text.input_ids, attention_mask = text.attention_mask )
+        print("Input IDs shape:", text.input_ids.shape)  # This should be [batch_size, 512]
+        print("Attention Mask shape:", text.attention_mask.shape)  # This should be [batch_size, 512]
+        text_embeddings = self.text_transformer(text.input_ids, attention_mask = text.attention_mask)
         enc_text = text_embeddings[0]
 
         # depending on whether text is using causal mask, post process, moving eos token to the first position

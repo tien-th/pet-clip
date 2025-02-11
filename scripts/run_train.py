@@ -1,13 +1,13 @@
-import torch
 
 from transformers import BertTokenizer, BertModel
 from ct_clip import CTCLIP, TextTransformer
 from CTCLIPTrainer import CTClipTrainer
 
 
-tokenizer = BertTokenizer.from_pretrained('vinai/phobert-base',do_lower_case=True)
+pretrain = 'vinai/phobert-base'
+tokenizer = BertTokenizer.from_pretrained(pretrain, do_lower_case=True)
 
-text_encoder = BertModel.from_pretrained("vinai/phobert-base")
+text_encoder = BertModel.from_pretrained(pretrain)
 
 print("---------")
 print(tokenizer.pad_token_id)
@@ -49,7 +49,7 @@ clip = CTCLIP(
 trainer = CTClipTrainer(
     clip,
     root='/home/user01/aiotlab/thaind/DAC001',
-    batch_size = 8,
+    batch_size = 1,
     results_folder="output_folder",
     num_train_steps = 100001,
     num_workers = 4,
